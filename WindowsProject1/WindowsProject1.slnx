@@ -3,5 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="../Custom_DLL/Custom_DLL.vcxproj" Id="ee65f321-3457-484c-ae95-65b3bf1aed55" />
   <Project Path="WindowsProject1.vcxproj" Id="eb99a3ba-523a-4dfc-8d29-285a2addc48e" />
 </Solution>

@@ -396,7 +396,7 @@ void Injector(const std::wstring& processName) {
 
     // Allocate virtual memory to the target process
     struct VirtualMemoryProcessOptions processVirtualMemoryOptions;
-    const wchar_t dllPath[] = L"C:\\Windows\\System32\\user32.dll";
+    const wchar_t dllPath[] = L"<PATH_TO_YOUR_DLL>";
     SIZE_T dwSize = (wcslen(dllPath) + 1) * sizeof(wchar_t);    // wcslen() counts the characters in a string (excluding null terminator)
     LPVOID pAllocatedMemory = AllocateProcessVirtualMemory(htargetProcess, NULL, dwSize, processVirtualMemoryOptions);
     if (!pAllocatedMemory) return;
@@ -415,17 +415,28 @@ void Injector(const std::wstring& processName) {
 
     // Get a kernel dll file (located in the same virtual address for every process)
     //HMODULE hKernelModule = GetModuleHandle(L"kernel32.dll");
-    LPTHREAD_START_ROUTINE pMsgBox =
-        (LPTHREAD_START_ROUTINE)GetProcAddress(
-            GetModuleHandleA("user32.dll"),
-            "MessageBoxW"
-        );    
-    if (!CreateRemoteThread(htargetProcess, NULL, 0, pMsgBox, 0, 0, NULL))
+    LPTHREAD_START_ROUTINE pMsgBox = (LPTHREAD_START_ROUTINE)GetProcAddress(
+        LoadLibrary(L"kernel32.dll"),
+        "LoadLibraryW"
+    );
+    if (!pMsgBox)
+    {
+        OutputDebugString(L"Failed to get address of kernel module member\n");
+        return;
+    }
+    OutputDebugString(L"Obtained address of kernel module member\n");
+
+
+    HANDLE hThread = CreateRemoteThread(htargetProcess, NULL, 0, pMsgBox, pAllocatedMemory, 0, NULL);
+    if (!hThread)
     {
         OutputDebugString(L"Failed to create remote thread\n");
         return;
     }
     OutputDebugString(L"Successfully created remote thread\n");
+
+    // Wait for remote thread to finish before freeing its memory
+    WaitForSingleObject(hThread, INFINITE);
 
     // Free the entire region of initially allocated memory
     BOOL isMemoryFreed = VirtualFreeEx(htargetProcess, pAllocatedMemory, 0, MEM_RELEASE);

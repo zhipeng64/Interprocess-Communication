@@ -1,4 +1,6 @@
-﻿/.vs
-/WindowsProject1/x64/Debug
-/x64/Debug
-/WindowsProject1.vcxproj.user
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/Custom_DLL/x64/Debug
+/Custom_DLL/Custom_DLL.vcxproj.user
