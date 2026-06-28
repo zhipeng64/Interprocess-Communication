@@ -4,3 +4,5 @@
 
 /Custom_DLL/x64/Debug
 /Custom_DLL/Custom_DLL.vcxproj.user
+/.vs
+/x64/Debug
