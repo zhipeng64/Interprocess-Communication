@@ -1,6 +1,8 @@
 // WindowsProject1.cpp : Defines the entry point for the application.
 //
 
+#include "process.h"
+#include "utils.h"
 #include "framework.h"
 #include "WindowsProject1.h"
 #include <string>
@@ -14,13 +16,17 @@ WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 // Forward declarations of functions included in this code module:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
+ATOM                MyRegisterClass(HINSTANCE);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    Process(HWND, UINT, WPARAM, LPARAM);
-void                Hax(const std::wstring&);
+void                Injector(const std::wstring&);
 DWORD               GetProcessIdByName(const std::wstring&);
+HANDLE              OpenTargetProcess(const std::wstring&, const OpenProcessOptions&);
+LPVOID              AllocateProcessVirtualMemory(HANDLE, LPVOID, SIZE_T, const VirtualMemoryProcessOptions&);
+BOOL                WriteTargetProcessMemory(HANDLE, LPVOID, LPCVOID, SIZE_T, SIZE_T*);
+BOOL                ReadTargetProcessMemory(HANDLE, LPVOID, LPVOID, SIZE_T, SIZE_T*);
 
 
 
@@ -243,7 +249,7 @@ INT_PTR CALLBACK Process(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
             // 'usertext' now contains the exact string from the window!
             OutputDebugString(usertext.c_str());
-            Hax(usertext.c_str());
+            Injector(usertext.c_str());
 
 
 
@@ -287,79 +293,154 @@ DWORD GetProcessIdByName(const std::wstring& processName) {
         }
     } while (Process32Next(hProcessSnapshot, &pe32));
 
+    // Close snapshot handle 
+	if (!CloseHandle(hProcessSnapshot)) {
+        OutputDebugString(L"Failed to close snapshot handle\n");
+    }
 
     return pid;
 }
 
-// Creates a kernel handle to another local process, allocates virtual memory,
-// write to the allocated space, and execute the written code
-void Hax(const std::wstring& processName) {
-    // Open process to retrieve its kernel handle
-    DWORD accessRights = PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_TERMINATE;
-    BOOL childInheritHandle = false;
+// Opens a local target process and returns a kernel handle to it
+HANDLE OpenTargetProcess(const std::wstring& processName, const OpenProcessOptions& options)
+{
     DWORD processId = GetProcessIdByName(processName);
-
     if (processId == -1) {
         OutputDebugString(L"Failed to obtain target process id\n");
-        return;
+        return nullptr;
     }
     OutputDebugString((L"Target process discovered, Process ID: " + std::to_wstring(processId) + L"\n").c_str());
 
-    // Obtain a handle to the target process
-    HANDLE htargetProcess = OpenProcess(accessRights, childInheritHandle, processId);
+    HANDLE htargetProcess = OpenProcess(options.accessRights, options.inheritChildHandle, processId);
     if (!htargetProcess)
     {
         OutputDebugString(L"Failed to obtain target process handle\n");
-        return;
+        return nullptr;
     }
     OutputDebugString(L"Obtained handle to target process\n");
+    return htargetProcess;
+}
 
-    // Allocate virtual memory to the target process
-    const wchar_t test_str[] = L"doll";
-
-    // wcslen() counts the characters in a string (excluding null terminator)
-    SIZE_T dwSize = (wcslen(test_str) + 1) * sizeof(wchar_t);
-
+// Allocates virtual memory of a local target process and returns the allocated address
+LPVOID AllocateProcessVirtualMemory(HANDLE htargetProcess, LPVOID lpAddress, SIZE_T dwSize, const VirtualMemoryProcessOptions& options)
+{
     // MEM_RESERVE reserves a range of a process's VAS, MEM_COMMIT guarantees the process is allocated a given
     // amount of physical storage space like 4KB. Note: It does not guarantee fixed physical addresses (since page frames get moved around
     // all the time), it guarantees physical storage space.
-
-
     LPVOID pAllocatedMemory = VirtualAllocEx(
         htargetProcess,
-        NULL,
+        lpAddress,
         dwSize,
-        MEM_RESERVE | MEM_COMMIT,
-        PAGE_READWRITE
+        options.flAllocationTypes,
+        options.flProtect  
     );
+
     if (!pAllocatedMemory)
     {
         OutputDebugString(L"Failed to allocate virtual memory for target\n");
-        return;
+        return nullptr;
     }
     OutputDebugString(L"Allocated pages for target\n");
-    
-    // Print the base address of page
-    wchar_t buffer[128];
-    std::swprintf(buffer, sizeof(buffer) / sizeof(wchar_t), L"%p", (void*)pAllocatedMemory);
-    OutputDebugString((std::wstring(buffer) + L"\n").c_str());
+    return pAllocatedMemory;
+}
 
-    // Write to the address
-    BOOL writeSuccess = WriteProcessMemory(htargetProcess, pAllocatedMemory, test_str, sizeof(test_str), NULL);
+
+// Writes to allocated virtual memory of a process and returns 1 if successful, 0 otherwise
+BOOL WriteTargetProcessMemory(HANDLE htargetProcess, LPVOID pAllocatedMemory, LPCVOID inputStr, SIZE_T nSize, SIZE_T* bytesWritten)
+{
+    BOOL writeSuccess = WriteProcessMemory(htargetProcess, pAllocatedMemory, inputStr, nSize, NULL);
     if (writeSuccess == 0)
     {
         OutputDebugString(L"Failed to write test string to target process page\n");
     }
     OutputDebugString(L"Wrote test string to target process page\n");
+    return writeSuccess;
+}
 
-    // Read the string from the address
+// Reads to allocated virtual memory of a process and returns 1 if successful, 0 otherwise
+BOOL ReadTargetProcessMemory(HANDLE htargetProcess, LPVOID pAllocatedMemory, LPVOID buffer, SIZE_T nSize, SIZE_T* bytesRead)
+{
     wchar_t buf[128] = { 0 };
-    BOOL readSuccess = ReadProcessMemory(htargetProcess, pAllocatedMemory, buf, sizeof(test_str), NULL);
+    BOOL readSuccess = ReadProcessMemory(htargetProcess, pAllocatedMemory, buf, nSize, NULL);
     if (readSuccess == 0)
     {
         OutputDebugString(L"Failed to read test string from target process\n");
     }
     OutputDebugString((L"Target string fetched: " + std::wstring(buf) + L"\n").c_str());
+    return readSuccess;
+}
+
+// Thread Entry Point Callback that injects DLL and runs routines
+DWORD WINAPI initiator(LPVOID dllMemoryAddress)
+{
+    const wchar_t* dllAddress = (const wchar_t*)dllMemoryAddress;
+
+    // Loads a module to the process's virtual address space
+    if (!LoadLibraryW(dllAddress))
+    {
+        OutputDebugString(L"Failed to load DLL file\n");
+        return 0;
+    }
+    OutputDebugString(L"Loaded DLL file into process virtual memory\n");
+    return 1;
+}
+
+// Creates a kernel handle to another local process, allocates virtual memory,
+// write to the allocated space, and execute the written code
+void Injector(const std::wstring& processName) {
+    // Open process to retrieve its kernel handle
+    struct OpenProcessOptions processOptions;
+    processOptions.accessRights |= PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION;
+    HANDLE htargetProcess = OpenTargetProcess(processName, processOptions);
+    if (!htargetProcess) return;
+
+    // Allocate virtual memory to the target process
+    struct VirtualMemoryProcessOptions processVirtualMemoryOptions;
+    const wchar_t dllPath[] = L"C:\\Windows\\System32\\user32.dll";
+    SIZE_T dwSize = (wcslen(dllPath) + 1) * sizeof(wchar_t);    // wcslen() counts the characters in a string (excluding null terminator)
+    LPVOID pAllocatedMemory = AllocateProcessVirtualMemory(htargetProcess, NULL, dwSize, processVirtualMemoryOptions);
+    if (!pAllocatedMemory) return;
 
 
+    // Print the allocated address
+    PrintPointerAddress(pAllocatedMemory);
+
+    // Write to the allocated address
+    BOOL writeSuccess = WriteTargetProcessMemory(htargetProcess, pAllocatedMemory, dllPath, sizeof(dllPath), NULL);
+    if (!writeSuccess) return;
+
+    // Read the string from the address
+    //wchar_t buf[128] = { 0 };
+    //BOOL readSuccess = ReadTargetProcessMemory(htargetProcess, pAllocatedMemory, buf, sizeof(test_str), NULL);
+
+    // Get a kernel dll file (located in the same virtual address for every process)
+    //HMODULE hKernelModule = GetModuleHandle(L"kernel32.dll");
+    LPTHREAD_START_ROUTINE pMsgBox =
+        (LPTHREAD_START_ROUTINE)GetProcAddress(
+            GetModuleHandleA("user32.dll"),
+            "MessageBoxW"
+        );    
+    if (!CreateRemoteThread(htargetProcess, NULL, 0, pMsgBox, 0, 0, NULL))
+    {
+        OutputDebugString(L"Failed to create remote thread\n");
+        return;
+    }
+    OutputDebugString(L"Successfully created remote thread\n");
+
+    // Free the entire region of initially allocated memory
+    BOOL isMemoryFreed = VirtualFreeEx(htargetProcess, pAllocatedMemory, 0, MEM_RELEASE);
+    if (!isMemoryFreed)
+    {
+        OutputDebugString(L"Failed to free target process memory\n");
+        return;
+    }
+    OutputDebugString(L"Target process memory freed\n");
+
+    // Close handle to target process
+    if (!CloseHandle(htargetProcess))
+    {
+        OutputDebugString(L"Failed to close target process handle\n");
+        return;
+    }
+    OutputDebugString(L"Successfully closed target process handled\n");
 }
