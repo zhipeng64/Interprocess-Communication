@@ -396,7 +396,7 @@ void Injector(const std::wstring& processName) {
 
     // Allocate virtual memory to the target process
     struct VirtualMemoryProcessOptions processVirtualMemoryOptions;
-    const wchar_t dllPath[] = L"C:\\Users\\zhipe\\source\\repos\\x64\\Debug\\Custom_DLL.dll";
+    const wchar_t dllPath[] = L"<PATH_TO_DLL>";
     SIZE_T dwSize = (wcslen(dllPath) + 1) * sizeof(wchar_t);    // wcslen() counts the characters in a string (excluding null terminator)
     LPVOID pAllocatedMemory = AllocateProcessVirtualMemory(htargetProcess, NULL, dwSize, processVirtualMemoryOptions);
     if (!pAllocatedMemory) return;
