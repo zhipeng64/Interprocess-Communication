@@ -11,6 +11,24 @@ This is a project that spawns a local process that injects and executes a custom
 into a local target process. The local process presents a user interface for the user to enter the local
 target process's name to inject to. 
 
+**Technical Details**
+
+The injector performs the following steps:
+
+1. Opens the target process.
+2. Allocates memory inside the target process.
+3. Writes the DLL path into remote memory.
+4. Creates a remote thread that loads the DLL.
+5. Executes DLLMain on load
+
+Key Win32 APIs used:
+- OpenProcess
+- VirtualAllocEx
+- WriteProcessMemory
+- CreateRemoteThread
+- LoadLibrary
+- VirtualFreeEx
+
 **How to use it**
 
 Clone the repository using Visual Studio. 
