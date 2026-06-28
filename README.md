@@ -7,8 +7,9 @@ from the use of this software. Use at your own risk.
 
 **Summary**
 
-This is a project that uses the Windows 32 API to inject and execute a custom DLL module
-into a local target process.
+This is a project that spawns a local process that injects and executes a custom DLL module
+into a local target process. The local process presents a user interface for the user to enter the local
+target process's name to inject to. 
 
 **How to use it**
 
