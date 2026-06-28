@@ -14,6 +14,9 @@ target process's name to inject to.
 **How to use it**
 
 Clone the repository using Visual Studio. 
-Build each of the projects, replacing the DLL filename placeholder for the DLL you wish to use.
+
+Build each of the projects, replacing the DLL filename placeholder with the DLL module you wish to use.
+
 Run the .exe file, click on the Process Name tab to enter the name of the local process you wish to inject the DLL to and click "Ok".
+
 The DLL will be injected and executed automatically.
