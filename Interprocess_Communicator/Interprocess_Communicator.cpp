@@ -1,10 +1,10 @@
-// WindowsProject1.cpp : Defines the entry point for the application.
+// Interprocess_Communicator.cpp : Defines the entry point for the application.
 //
 
 #include "process.h"
 #include "utils.h"
 #include "framework.h"
-#include "WindowsProject1.h"
+#include "Interprocess_Communicator.h"
 #include <string>
 #include <tlhelp32.h> // To create snapshot of processes
 
@@ -43,7 +43,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_WINDOWSPROJECT1, szWindowClass, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_Interprocess_Communicator, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
@@ -52,7 +52,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINDOWSPROJECT1));
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_Interprocess_Communicator));
 
     MSG msg;
 
@@ -92,10 +92,10 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
     wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSPROJECT1));
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_Interprocess_Communicator));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WINDOWSPROJECT1);
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_Interprocess_Communicator);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
@@ -396,7 +396,7 @@ void Injector(const std::wstring& processName) {
 
     // Allocate virtual memory to the target process
     struct VirtualMemoryProcessOptions processVirtualMemoryOptions;
-    const wchar_t dllPath[] = L"<PATH_TO_YOUR_DLL>";
+    const wchar_t dllPath[] = L"C:\\Users\\zhipe\\source\\repos\\x64\\Debug\\Custom_DLL.dll";
     SIZE_T dwSize = (wcslen(dllPath) + 1) * sizeof(wchar_t);    // wcslen() counts the characters in a string (excluding null terminator)
     LPVOID pAllocatedMemory = AllocateProcessVirtualMemory(htargetProcess, NULL, dwSize, processVirtualMemoryOptions);
     if (!pAllocatedMemory) return;

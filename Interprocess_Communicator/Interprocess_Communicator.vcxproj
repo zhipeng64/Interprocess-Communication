@@ -24,6 +24,7 @@
     <ProjectGuid>{eb99a3ba-523a-4dfc-8d29-285a2addc48e}</ProjectGuid>
     <RootNamespace>WindowsProject1</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Interprocess_Communicator</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -132,17 +133,17 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="utils.h" />
-    <ClInclude Include="WindowsProject1.h" />
+    <ClInclude Include="Interprocess_Communicator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WindowsProject1.cpp" />
+    <ClCompile Include="Interprocess_Communicator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="WindowsProject1.rc" />
+    <ResourceCompile Include="Interprocess_Communicator.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="small.ico" />
-    <Image Include="WindowsProject1.ico" />
+    <Image Include="Interprocess_Communicator.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />

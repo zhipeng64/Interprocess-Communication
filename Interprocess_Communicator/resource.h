@@ -1,19 +1,20 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by WindowsProject1.rc
+// Used by Interprocess_Communicator.rc
 //
 #define IDC_MYICON                      2
-#define IDD_PROCESSBOX					102
+#define ID_Interprocess_Communicator    8
+#define IDD_PROCESSBOX                  102
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
 #define IDM_ABOUT                       104
 #define IDM_EXIT                        105
-#define IDI_WINDOWSPROJECT1             107
+#define IDI_Interprocess_Communicator   107
 #define IDI_SMALL                       108
-#define IDC_WINDOWSPROJECT1             109
+#define IDC_Interprocess_Communicator   109
 #define IDR_MAINFRAME                   128
 #define IDD_DIALOG1                     130
-#define IDC_INPUT						1001
+#define IDC_INPUT                       1001
 #define IDM_PROCESSNAME                 32771
 #define IDC_STATIC                      -1
 

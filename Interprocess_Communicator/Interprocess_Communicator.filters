@@ -24,7 +24,7 @@
     <ClInclude Include="Resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowsProject1.h">
+    <ClInclude Include="Interprocess_Communicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="process.h">
@@ -35,12 +35,12 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WindowsProject1.cpp">
+    <ClCompile Include="Interprocess_Communicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="WindowsProject1.rc">
+    <ResourceCompile Include="Interprocess_Communicator.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -48,7 +48,7 @@
     <Image Include="small.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="WindowsProject1.ico">
+    <Image Include="Interprocess_Communicator.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
